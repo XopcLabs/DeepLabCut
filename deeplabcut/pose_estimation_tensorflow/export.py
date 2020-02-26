@@ -18,14 +18,13 @@ def export_model(config, Shuffles=[1]):
     import numpy as np
     import os
 
-    tf.reset_default_graph()
 
     # Loading config from pose_cfg
     cfg = auxiliaryfunctions.read_config(config)
     TrainingFractions = cfg['TrainingFraction']
 
     # Make folder for export data
-    auxiliaryfunctions.attempttomakefolder(os.path.join(cfg['project_path'], 'exported_model'))
+    auxiliaryfunctions.attempttomakefolder(os.path.join(cfg['project_path'], 'exported-model'))
     
     for shuffle in Shuffles:
         for trainFraction in TrainingFractions:
@@ -61,13 +60,14 @@ def export_model(config, Shuffles=[1]):
             # Name for deeplabcut net (based on its parameters)
             DLCscorer, _ = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
 
-            # Load model
-            sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
+            # # Load model
+            sess, saver = predict.setup_net_export(dlc_cfg)
 
+            savepath = os.path.join(exportfolder, DLCscorer)
+            print(savepath)
             # Save model
-            saver = tf.train.Saver()
-            savepath = os.path.join(exportfolder, 'DLCscorer')
             saver.save(sess, savepath)
             print('Saved model to {}!'.format(savepath))
+
             # Close session
             sess.close()

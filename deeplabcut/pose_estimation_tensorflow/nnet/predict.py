@@ -43,6 +43,23 @@ def setup_pose_prediction(cfg):
 
     return sess, inputs, outputs
 
+
+def setup_net_export(cfg):
+    TF.reset_default_graph()
+    inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size   , None, None, 3])
+    pose_net(cfg).test(inputs)
+
+    restorer = TF.train.import_meta_graph(cfg.init_weights + '.meta')
+    sess = TF.Session()
+    sess.run(TF.global_variables_initializer())
+    sess.run(TF.local_variables_initializer())
+
+    # Restore variables from disk.
+    restorer.restore(sess, cfg.init_weights)
+
+    return sess, restorer
+
+
 def extract_cnn_output(outputs_np, cfg):
     ''' extract locref + scmap from network '''
     scmap = outputs_np[0]
