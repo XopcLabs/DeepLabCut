@@ -1,3 +1,7 @@
+examples/
+# VSCode workspace files
+*.code-workspace
+
 # Tensorflow checkpoints
 *.ckpt
 snapshot-*
