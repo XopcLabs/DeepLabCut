@@ -295,7 +295,7 @@ def GetExportFolder(trainFraction, shuffle, cfg):
     Task = cfg['Task']
     date = cfg['date']
     iterate = 'iteration-' + str(cfg['iteration'])
-    return Path('exported_model/' + iterate + '/' + Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
+    return Path('exported-model/' + iterate + '/' + Task + date + '-trainset' + str(int(trainFraction * 100)) + 'shuffle' + str(shuffle))
 
 def GetDataandMetaDataFilenames(trainingsetfolder,trainFraction,shuffle,cfg):
     # Filename for metadata and data relative to project path for corresponding parameters
