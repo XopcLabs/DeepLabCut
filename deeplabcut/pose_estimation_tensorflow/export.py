@@ -60,7 +60,7 @@ def export_model(config, Shuffles=[1]):
             # Name for deeplabcut net (based on its parameters)
             DLCscorer, _ = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
 
-            # # Load model
+            # Load model
             sess, saver = predict.setup_net_export(dlc_cfg)
 
             savepath = os.path.join(exportfolder, DLCscorer)
