@@ -1,7 +1,7 @@
-def export_model(config, Shuffles=[1]):
+def export_model(config, Shuffles=[1], savepath=None):
     """
+    Exports trained model.
 
-    Exports model trained at specified shuffles
     Parameters
     ----------
     config : string
@@ -9,6 +9,16 @@ def export_model(config, Shuffles=[1]):
 
     Shuffles: list, optional
         List of integers specifying the shuffle indices of the training dataset. The default is [1]
+    
+    savepath: string or None, optional
+        String path to the folder to save model to. If not supplied, model will be saved at 'project_path/exported-model'.
+
+    Examples
+    --------
+    Without specifying savepath:
+    >> deeplabcut.export_model('path/to/config.yaml', shuffle=[1])
+    With specifying savepath:
+    >> deeplabcut.export_model('path/to/config.yaml', savepath='path/to/folder')
     """
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.nnet import predict
@@ -23,8 +33,9 @@ def export_model(config, Shuffles=[1]):
     cfg = auxiliaryfunctions.read_config(config)
     TrainingFractions = cfg['TrainingFraction']
 
-    # Make folder for export data
-    auxiliaryfunctions.attempttomakefolder(os.path.join(cfg['project_path'], 'exported-model'))
+    if not savepath:
+        # Make folder for export data
+        auxiliaryfunctions.attempttomakefolder(os.path.join(cfg['project_path'], 'exported-model'))
     
     for shuffle in Shuffles:
         for trainFraction in TrainingFractions:
@@ -35,11 +46,16 @@ def export_model(config, Shuffles=[1]):
             try:
                 dlc_cfg = load_config(str(path_test_config))
             except FileNotFoundError:
-                raise FileNotFoundError('It seem the model for shuffle {} and trainFraction {} does not exis'.format(shuffle, trainFraction) )
+                raise FileNotFoundError('It seem the model for shuffle {} and trainFraction {} does not exist'.format(shuffle, trainFraction) )
             
-            # Create folder structure to store exported models 
-            exportfolder = os.path.join(cfg['project_path'], str(auxiliaryfunctions.GetExportFolder(trainFraction, shuffle, cfg)))
-            auxiliaryfunctions.attempttomakefolder(exportfolder, recursive=True)
+            if not savepath:
+                # Create folder structure to store exported models 
+                exportfolder = os.path.join(cfg['project_path'], str(auxiliaryfunctions.GetExportFolder(trainFraction, shuffle, cfg)))
+                auxiliaryfunctions.attempttomakefolder(exportfolder, recursive=True)
+            elif os.path.isdir(savepath):
+                exportfolder = savepath
+            else:
+                raise FileNotFoundError('Save path directory does not exist. Please provide an existent directory')
 
             # Check which snapshots are available and sort them by # iterations
             Snapshots = np.array([fn.split('.')[0] for fn in os.listdir(os.path.join(modelfolder, 'train')) if 'index' in fn])
@@ -63,11 +79,11 @@ def export_model(config, Shuffles=[1]):
             # Load model
             sess, saver = predict.setup_net_export(dlc_cfg)
 
-            savepath = os.path.join(exportfolder, DLCscorer)
+            exportfolder = os.path.join(exportfolder, DLCscorer)
             print(savepath)
             # Save model
-            saver.save(sess, savepath)
-            print('Saved model to {}!'.format(savepath))
+            saver.save(sess, exportfolder)
+            print('Saved model to {}!'.format(exportfolder))
 
             # Close session
             sess.close()
