@@ -26,6 +26,7 @@ def export_model(config, Shuffles=[1], savepath=None):
     import tensorflow as tf
     from pathlib import Path
     import numpy as np
+    import shutil
     import os
 
 
@@ -42,11 +43,12 @@ def export_model(config, Shuffles=[1], savepath=None):
             modelfolder = str(auxiliaryfunctions.GetModelFolder(trainFraction, shuffle, cfg))
             modelfolder = os.path.join(cfg['project_path'], modelfolder)
             path_test_config = Path(modelfolder) / 'test' / 'pose_cfg.yaml'
+            path_train_config = Path(modelfolder) / 'train' / 'pose_cfg.yaml'
 
             try:
                 dlc_cfg = load_config(str(path_test_config))
             except FileNotFoundError:
-                raise FileNotFoundError('It seem the model for shuffle {} and trainFraction {} does not exist'.format(shuffle, trainFraction) )
+                raise FileNotFoundError('It seems the model for shuffle {} and trainFraction {} does not exist'.format(shuffle, trainFraction) )
             
             if not savepath:
                 # Create folder structure to store exported models 
@@ -84,6 +86,11 @@ def export_model(config, Shuffles=[1], savepath=None):
             # Save model
             saver.save(sess, exportfolder)
             print('Saved model to {}!'.format(exportfolder))
+
+            # Save cfg
+            shutil.copyfile(config, os.path.join(exportfolder, 'config.yaml'))
+            shutil.copyfile(path_train_config, os.path.join(exportfolder, 'train_cfg.yaml'))
+            shutil.copyfile(path_test_config, os.path.join(exportfolder, 'test_cfg.yaml'))
 
             # Close session
             sess.close()
